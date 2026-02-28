@@ -1,5 +1,7 @@
 # Video Watermark Remover
 
+**GitHub Repository:** [https://github.com/hackyinge/magic-eraser-pro](https://github.com/hackyinge/magic-eraser-pro)
+
 GPU加速视频水印去除工具，支持框选水印区域、实时预览、多GPU硬件加速。
 
 ## 功能特性
@@ -12,29 +14,29 @@ GPU加速视频水印去除工具，支持框选水印区域、实时预览、�
 
 ## 系统要求
 
-| 组件 | 最低版本 | 说明 |
-|------|----------|------|
-| Node.js | 18+ | 后端运行时 |
-| FFmpeg | 4.0+ | 视频处理核心 |
-| Python | 3.8+ | OpenCV引擎（可选） |
-| opencv-python | 4.0+ | 高质量修复（可选） |
+| 组件          | 最低版本 | 说明               |
+| ------------- | -------- | ------------------ |
+| Node.js       | 18+      | 后端运行时         |
+| FFmpeg        | 4.0+     | 视频处理核心       |
+| Python        | 3.8+     | OpenCV引擎（可选） |
+| opencv-python | 4.0+     | 高质量修复（可选） |
 
 ## GPU兼容性矩阵
 
-| GPU类型 | macOS | Linux | Windows | 编码器 |
-|---------|-------|-------|---------|--------|
-| Apple Silicon / Intel Mac | ✅ | - | - | h264_videotoolbox |
-| NVIDIA GeForce/RTX/GTX | - | ✅ | ✅ | h264_nvenc |
-| AMD Radeon | - | ✅ | ✅ | h264_amf |
-| Intel 核显（第6代+） | - | ✅ | ✅ | h264_qsv |
-| 无GPU / 回退 | ✅ | ✅ | ✅ | libx264 (CPU) |
+| GPU类型                   | macOS | Linux | Windows | 编码器            |
+| ------------------------- | ----- | ----- | ------- | ----------------- |
+| Apple Silicon / Intel Mac | ✅    | -     | -       | h264_videotoolbox |
+| NVIDIA GeForce/RTX/GTX    | -     | ✅    | ✅      | h264_nvenc        |
+| AMD Radeon                | -     | ✅    | ✅      | h264_amf          |
+| Intel 核显（第6代+）      | -     | ✅    | ✅      | h264_qsv          |
+| 无GPU / 回退              | ✅    | ✅    | ✅      | libx264 (CPU)     |
 
 ## 快速开始
 
 ```bash
 # 1. 克隆项目
-git clone <repo-url>
-cd video-watermark-remover
+git clone https://github.com/hackyinge/magic-eraser-pro.git
+cd magic-eraser-pro
 
 # 2. 复制环境配置
 cp .env.example .env
@@ -85,6 +87,7 @@ open http://localhost:3000
 ## GPU加速安装指引
 
 ### macOS - Apple VideoToolbox（内置，无需安装）
+
 ```bash
 brew install ffmpeg
 # 验证
@@ -92,6 +95,7 @@ ffmpeg -f lavfi -i color=c=black:s=256x256:d=0.1 -c:v h264_videotoolbox -f null 
 ```
 
 ### Linux - NVIDIA NVENC
+
 ```bash
 # 安装驱动
 sudo apt install -y nvidia-driver-535
@@ -101,20 +105,24 @@ ffmpeg -f lavfi -i color=c=black:s=256x256:d=0.1 -c:v h264_nvenc -f null -
 ```
 
 ### Linux - Intel QSV
+
 ```bash
 sudo apt install -y intel-media-va-driver-non-free libmfx1 ffmpeg
 vainfo
 ```
 
 ### Windows - NVIDIA / AMD
+
 从官方下载最新驱动，配合含GPU支持的FFmpeg即可自动启用。
 
 ## API文档
 
 ### POST /api/process
+
 上传视频并去除水印。
 
 **请求（multipart/form-data）：**
+
 ```
 video        File     视频文件
 regions      JSON     水印区域数组 [{x,y,w,h}, ...]
@@ -123,6 +131,7 @@ quality      string   'low' | 'medium' | 'high'（默认 'high'）
 ```
 
 **响应：**
+
 ```json
 {
   "jobId": "abc123",
@@ -131,9 +140,11 @@ quality      string   'low' | 'medium' | 'high'（默认 'high'）
 ```
 
 ### GET /api/jobs/:jobId
+
 查询任务状态。
 
 **响应：**
+
 ```json
 {
   "jobId": "abc123",
@@ -145,9 +156,11 @@ quality      string   'low' | 'medium' | 'high'（默认 'high'）
 ```
 
 ### GET /api/gpu-status
+
 获取当前GPU检测结果。
 
 **响应：**
+
 ```json
 {
   "encoder": "h264_videotoolbox",
@@ -157,6 +170,7 @@ quality      string   'low' | 'medium' | 'high'（默认 'high'）
 ```
 
 ### GET /api/install-guides/:tool
+
 获取指定工具的安装指引（tool: ffmpeg | python | nvidia | amd | intel）。
 
 ## 项目结构
