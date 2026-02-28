@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+body {
+  background-color: #878787;
+  color: #f8fafc;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.25), transparent),
+    radial-gradient(ellipse 60% 80% at 0% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 80% at 100% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 100% at 50% 100%, rgba(34, 211, 238, 0.08) 0%, transparent 50%);
+  background-attachment: fixed;
+  background-size: 100% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+::selection {
+  background-color: rgba(99, 102, 241, 0.3);
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background-color: rgba(2, 6, 23, 0.5); }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(51, 65, 85, 0.5);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: rgba(71, 85, 105, 0.7); }
+
+/* Glass morphism */
+.glass {
+  background-color: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  background-image: linear-gradient(to bottom right, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+}
+
+.glass-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-hover:hover {
+  background-color: rgba(51, 65, 85, 0.7);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.15), 0 0 0 1px rgba(255,255,255,0.08) inset;
+  transform: translateY(-2px);
+}
+
+.glass-strong {
+  background-color: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06) inset;
+}
+
+/* Gradient text */
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, #93c5fd, #a5b4fc, #c4b5fd);
+}
+.text-gradient-emerald {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, #6ee7b7, #5eead4);
+}
+.text-gradient-orange {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, #fbbf24, #f97316);
+}
+
+/* Glow */
+.glow {
+  box-shadow: 0 0 30px rgba(99,102,241,0.5), 0 0 60px rgba(99,102,241,0.2);
+}
+.glow-sm {
+  box-shadow: 0 0 15px rgba(99,102,241,0.4), 0 0 30px rgba(99,102,241,0.1);
+}
+.glow-emerald {
+  box-shadow: 0 0 20px rgba(16,185,129,0.4), 0 0 40px rgba(16,185,129,0.15);
+}
+.glow-red {
+  box-shadow: 0 0 20px rgba(239,68,68,0.4), 0 0 40px rgba(239,68,68,0.15);
+}
+
+/* Gradient backgrounds */
+.gradient-bg-blue { background-image: linear-gradient(to bottom right, #3b82f6, #6366f1); }
+.gradient-bg-purple { background-image: linear-gradient(to bottom right, #a855f7, #6366f1); }
+.gradient-bg-emerald { background-image: linear-gradient(to bottom right, #10b981, #14b8a6); }
+.gradient-bg-orange { background-image: linear-gradient(to bottom right, #f59e0b, #ef4444); }
+
+/* Canvas cursor crosshair override */
+.canvas-crosshair { cursor: crosshair !important; }
+
+/* Progress bar */
+.progress-bar {
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
