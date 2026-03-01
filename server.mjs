@@ -9,7 +9,7 @@ import cors from "cors";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import { detectGPUEnvironment, getInstallGuide } from "./gpu-detector.mjs";
+
 import swaggerUi from "swagger-ui-express";
 import swaggerJsDoc from "swagger-jsdoc";
 import {
@@ -82,7 +82,7 @@ const swaggerOptions = {
     info: {
       title: "Magic Eraser Pro API",
       version: "2.0.0",
-      description: "GPU 加速的智能水印去除服务 API，支持 FFmpeg、OpenCV、STTN、LAMA、ProPainter 多种算法",
+      description: "视频去水印服务 API，支持 FFmpeg 及 OpenCV 算法",
     },
     servers: [{ url: `http://localhost:${PORT}` }],
   },
@@ -94,13 +94,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customSiteTitle: "Watermark Remover API Docs",
 }));
 
-// ==========================================
-// GPU 状态缓存
-// ==========================================
 
-let gpuStatusCache = null;
-let gpuStatusCacheTime = 0;
-const GPU_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // ==========================================
 // API 路由
@@ -143,47 +137,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-/**
- * @openapi
- * /api/gpu-status:
- *   get:
- *     summary: GPU 环境状态
- *     description: 返回平台、GPU、FFmpeg、Python 环境信息，支持 5 分钟缓存
- *     tags: [System]
- *     parameters:
- *       - in: query
- *         name: refresh
- *         schema:
- *           type: string
- *           enum: [true, false]
- *         description: 强制刷新缓存
- *     responses:
- *       200:
- *         description: GPU 环境信息
- *       500:
- *         description: 检测失败
- */
-app.get("/api/gpu-status", async (req, res) => {
-  try {
-    const now = Date.now();
-    const forceRefresh = req.query.refresh === "true";
 
-    // 使用缓存（5分钟内有效）
-    if (!forceRefresh && gpuStatusCache && now - gpuStatusCacheTime < GPU_CACHE_TTL) {
-      return res.json({ ...gpuStatusCache, cached: true });
-    }
-
-    console.log("Detecting GPU environment...");
-    const status = await detectGPUEnvironment();
-    gpuStatusCache = status;
-    gpuStatusCacheTime = now;
-
-    res.json({ ...status, cached: false });
-  } catch (error) {
-    console.error("GPU detection failed:", error.message);
-    res.status(500).json({ error: "GPU detection failed", details: error.message });
-  }
-});
 
 /**
  * @openapi
@@ -252,7 +206,7 @@ app.post("/api/detect-watermark", upload.single("video"), async (req, res) => {
  *                 example: '{"x":10,"y":10,"width":200,"height":50}'
  *               method:
  *                 type: string
- *                 enum: [ffmpeg, inpaint, sttn, lama, propainter]
+ *                 enum: [ffmpeg, inpaint]
  *                 default: ffmpeg
  *               algorithm:
  *                 type: string
@@ -310,69 +264,7 @@ app.get("/api/download/:filename", (req, res) => {
   });
 });
 
-/**
- * @openapi
- * /api/ai-status:
- *   get:
- *     summary: AI 算法可用性状态
- *     description: 返回 STTN、LAMA、ProPainter 等 AI 算法的安装和可用状态
- *     tags: [System]
- *     responses:
- *       200:
- *         description: AI 算法状态
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 available:
- *                   type: boolean
- *                 algorithms:
- *                   type: object
- */
-app.get("/api/ai-status", async (req, res) => {
-  try {
-    const { getAIStatus } = await import("./engines/ai-engine.mjs");
-    const status = await getAIStatus();
-    res.json(status);
-  } catch (error) {
-    res.json({
-      available: false,
-      error: error.message,
-      algorithms: {},
-    });
-  }
-});
 
-/**
- * @openapi
- * /api/install-guide/{driver}:
- *   get:
- *     summary: 获取驱动/依赖安装指引
- *     tags: [System]
- *     parameters:
- *       - in: path
- *         name: driver
- *         required: true
- *         schema:
- *           type: string
- *           enum: [ffmpeg, nvidia, opencv, torch, python]
- *     responses:
- *       200:
- *         description: 安装指引内容
- *       404:
- *         description: 未知驱动类型
- */
-app.get("/api/install-guide/:driver", (req, res) => {
-  const { driver } = req.params;
-  const guide = getInstallGuide(driver);
-
-  if (guide.error) {
-    return res.status(404).json(guide);
-  }
-
-  res.json(guide);
-});
 
 // ==========================================
 // 前端路由回退 (SPA)
@@ -389,11 +281,9 @@ app.get("*", (req, res) => {
       message: "Frontend not built yet. Run: npm run build",
       api: {
         health: "GET /api/health",
-        gpuStatus: "GET /api/gpu-status",
         detectWatermark: "POST /api/detect-watermark",
         removeWatermark: "POST /api/remove-watermark",
         download: "GET /api/download/:filename",
-        installGuide: "GET /api/install-guide/:driver",
       },
     });
   }
@@ -424,12 +314,9 @@ PID:     ${process.pid}
 
 API Endpoints:
   GET  /api/health                    - Health check
-  GET  /api/gpu-status                - GPU environment status
-  GET  /api/ai-status                 - AI algorithm availability
   POST /api/detect-watermark          - Auto-detect watermark regions
   POST /api/remove-watermark          - Remove watermark (SSE stream)
   GET  /api/download/:filename        - Download processed video
-  GET  /api/install-guide/:driver     - Installation guide
   GET  /api-docs                      - Swagger API documentation
 
 Temp dirs:

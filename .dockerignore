@@ -1,0 +1,11 @@
+node_modules/
+client/node_modules/
+client/dist/
+dist/
+temp/
+output/
+uploads/
+temp-uploads/
+temp-outputs/
+.git/
+.env

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { VideoUpload } from './components/VideoUpload';
 import { WatermarkSelector } from './components/WatermarkSelector';
-import { GpuStatus } from './components/GpuStatus';
 import { ControlPanel } from './components/ControlPanel';
 import { ResultDisplay } from './components/ResultDisplay';
 
@@ -13,9 +12,7 @@ function App() {
   const [drawMode, setDrawMode] = useState('rect');
   const [videoDimensions, setVideoDimensions] = useState(null);
 
-  // GPU 状态
-  const [gpuStatus, setGpuStatus] = useState(null);
-  const [gpuLoading, setGpuLoading] = useState(true);
+  // 服务器状态
   const [serverOnline, setServerOnline] = useState(false);
 
   // 处理引擎选项
@@ -31,20 +28,16 @@ function App() {
   const [progress, setProgress] = useState(null);
   const [outputUrl, setOutputUrl] = useState(null);
 
-  // 启动时检测 GPU 环境 & 服务器状态
+  // 启动时检测服务器状态 (可以使用后端任意存活接口代替)
   useEffect(() => {
     const checkServer = async () => {
       try {
-        const res = await fetch('/api/gpu-status');
+        const res = await fetch('/api-docs'); // 使用 swagger 接口作为心跳检测
         if (res.ok) {
-          const data = await res.json();
-          setGpuStatus(data);
           setServerOnline(true);
         }
       } catch {
         setServerOnline(false);
-      } finally {
-        setGpuLoading(false);
       }
     };
     checkServer();
@@ -180,8 +173,6 @@ function App() {
 
           {/* 右侧控制面板 */}
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <GpuStatus gpuStatus={gpuStatus} loading={gpuLoading} />
-
             <ControlPanel
               drawMode={drawMode}
               setDrawMode={setDrawMode}

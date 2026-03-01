@@ -115,8 +115,8 @@ const getVideoDuration = async (inputPath) => {
       let stdout = "";
       child.stdout.on("data", (d) => (stdout += d.toString()));
       child.on("close", (code) => {
-      console.log('Task finished with code:', code);
-      console.log('-------------------------------------------------------------\n');
+        console.log('Task finished with code:', code);
+        console.log('-------------------------------------------------------------\n');
         if (code === 0) resolve(stdout);
         else reject(new Error("ffprobe failed"));
       });
@@ -302,8 +302,8 @@ export const detectWatermarkRegions = async (inputPath) => {
       let stdout = "";
       child.stdout.on("data", (d) => (stdout += d.toString()));
       child.on("close", (code) => {
-      console.log('Task finished with code:', code);
-      console.log('-------------------------------------------------------------\n');
+        console.log('Task finished with code:', code);
+        console.log('-------------------------------------------------------------\n');
         if (code === 0) resolve(stdout);
         else reject(new Error("ffprobe failed"));
       });
@@ -407,7 +407,7 @@ export const processWatermarkRemoval = async (req, res) => {
     // 校验每个区域
     regions.forEach((r, idx) => {
       if (r.x === undefined || r.y === undefined ||
-          r.width === undefined || r.height === undefined) {
+        r.width === undefined || r.height === undefined) {
         throw new Error(`Invalid region at index ${idx}`);
       }
     });
@@ -418,7 +418,7 @@ export const processWatermarkRemoval = async (req, res) => {
     });
   }
 
-  const method = req.body.method || "ffmpeg"; // "ffmpeg" | "inpaint" | "sttn" | "lama" | "propainter"
+  const method = req.body.method || "ffmpeg"; // "ffmpeg" | "inpaint"
   const algorithm = req.body.algorithm || "TELEA"; // for inpaint: TELEA or NS
   const quality = req.body.quality || "quality";
   const outputExt = path.extname(inputPath) || ".mp4";
@@ -443,17 +443,7 @@ export const processWatermarkRemoval = async (req, res) => {
       sendEvent({ type: "progress", ...progress });
     };
 
-    if (["sttn", "lama", "propainter"].includes(method)) {
-      const { removeWatermarkAI } = await import("./engines/ai-engine.mjs");
-      const batchSize = parseInt(req.body.batchSize) || 8;
-      await removeWatermarkAI({
-        inputPath, outputPath, regions,
-        algorithm: method.toUpperCase(),
-        quality: req.body.quality || "quality",
-        batchSize,
-        onProgress,
-      });
-    } else if (method === "inpaint") {
+    if (method === "inpaint") {
       await removeWatermarkInpaint(inputPath, outputPath, regions, { algorithm }, onProgress);
     } else {
       await removeWatermarkFFmpeg(inputPath, outputPath, regions, onProgress);
@@ -487,7 +477,12 @@ export const processWatermarkRemoval = async (req, res) => {
     res.end();
     cleanupFiles([outputPath]);
   } finally {
-    // Clean up input after a delay (allow SSE to finish)
-    setTimeout(() => cleanupFiles([inputPath]), 86400000);
+    // 10分钟后自动清理输入和输出文件，保护隐私及节省空间 (600,000 ms)
+    setTimeout(() => {
+      cleanupFiles([inputPath]);
+      if (fs.existsSync(outputPath)) {
+        cleanupFiles([outputPath]);
+      }
+    }, 600000);
   }
 };

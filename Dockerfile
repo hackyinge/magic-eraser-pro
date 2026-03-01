@@ -1,72 +1,49 @@
-# ============================================================
-# Stage 1: 构建前端
-# ============================================================
-FROM node:20-slim AS frontend-builder
-
+# ==========================================
+# 阶段 1：构建前端
+# ==========================================
+FROM node:18-bullseye AS frontend-builder
 WORKDIR /app
 
-# 安装依赖
-COPY package*.json ./
-RUN npm ci --include=dev
+# npm 使用淘宝镜像加速
+RUN npm config set registry https://registry.npmmirror.com
 
-# 复制源码并构建
-COPY . .
-RUN npm run build
+# 安装前端依赖
+COPY client/package*.json ./client/
+RUN cd client && npm install
 
-# ============================================================
-# Stage 2: 生产运行镜像
-# ============================================================
-FROM node:20-slim AS runner
+# 拷贝前端代码并构建
+COPY client/ ./client/
+RUN cd client && npm run build
 
-# 安装 FFmpeg 和 Python（含 OpenCV 依赖）
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# ==========================================
+# 阶段 2：构建后端及运行环境
+# ==========================================
+FROM node:18-bullseye-slim
+WORKDIR /app
+
+# 修改 APT 为阿里云源并安装系统环境 (FFmpeg, Python, OpenCV)
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
     ffmpeg \
     python3 \
-    python3-pip \
-    python3-dev \
-    # OpenCV 系统依赖
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    libgl1-mesa-glx \
-    # 清理缓存
+    python3-opencv \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装 Python 依赖
-RUN pip3 install --no-cache-dir opencv-python-headless numpy
-
-WORKDIR /app
-
-# 仅安装生产依赖
+# npm 使用淘宝镜像并安装后端代码 (只装生产依赖)
+RUN npm config set registry https://registry.npmmirror.com
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --production
 
-# 复制服务器代码
-COPY server/ ./server/
-COPY engines/ ./engines/
-COPY scripts/ ./scripts/
-COPY install-guides.mjs ./
+# 拷贝后端源代码及脚本
+COPY . .
 
-# 复制前端构建产物
-COPY --from=frontend-builder /app/dist ./dist
+# 从 builder 阶拷贝编译好的静态资源文件
+COPY --from=frontend-builder /app/client/dist ./dist
 
-# 创建上传/输出目录（使用 volume 挂载）
-RUN mkdir -p /data/uploads /data/output /data/temp
+# 暴露后端 API 与前端静态代理的同一端口
+EXPOSE 3099
 
-# 环境变量
-ENV NODE_ENV=production \
-    PORT=3000 \
-    UPLOAD_DIR=/data/uploads \
-    OUTPUT_DIR=/data/output
-
-# 数据目录作为 volume
-VOLUME ["/data"]
-
-EXPOSE 3000
-
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
-
-CMD ["node", "server/index.mjs"]
+# 启动服务器
+CMD ["npm", "start"]

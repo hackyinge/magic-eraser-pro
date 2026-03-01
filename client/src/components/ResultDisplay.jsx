@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Download, CheckCircle, SplitSquareHorizontal, Eye, Film, Play, Pause } from 'lucide-react';
+import { Download, CheckCircle, SplitSquareHorizontal, Eye, Film, Play, Pause, AlertTriangle } from 'lucide-react';
 
 export function ResultDisplay({ outputUrl, originalUrl, processing, progress }) {
   const [viewMode, setViewMode] = useState('result'); // 'result' | 'compare' | 'original'
@@ -87,11 +87,10 @@ export function ResultDisplay({ outputUrl, originalUrl, processing, progress }) 
               <button
                 key={id}
                 onClick={() => setViewMode(id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 ${
-                  viewMode === id
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 ${viewMode === id
                     ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
                     : 'text-slate-500 hover:text-slate-300'
-                }`}
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 {label}
@@ -139,11 +138,10 @@ export function ResultDisplay({ outputUrl, originalUrl, processing, progress }) 
                 className="w-full max-h-[500px] object-contain"
               />
               <div className="absolute top-3 left-3">
-                <span className={`px-2.5 py-1 rounded-full text-xs font-bold border backdrop-blur-sm ${
-                  viewMode === 'original'
+                <span className={`px-2.5 py-1 rounded-full text-xs font-bold border backdrop-blur-sm ${viewMode === 'original'
                     ? 'bg-black/60 text-slate-300 border-white/10'
                     : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                }`}>
+                  }`}>
                   {viewMode === 'original' ? '原始视频' : '处理完成'}
                 </span>
               </div>
@@ -170,6 +168,13 @@ export function ResultDisplay({ outputUrl, originalUrl, processing, progress }) 
               <Download className="w-4 h-4" />
               下载处理后的视频
             </a>
+          </div>
+
+          <div className="flex items-center justify-center gap-1.5 mt-4 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg max-w-max mx-auto">
+            <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <span className="text-xs text-amber-300 font-medium tracking-wide">
+              为保护您的隐私，该视频将在 <strong className="font-bold text-amber-200">10分钟</strong> 后从服务器销毁，请尽快下载。
+            </span>
           </div>
         </div>
       )}
