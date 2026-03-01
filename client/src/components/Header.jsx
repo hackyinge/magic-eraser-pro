@@ -26,7 +26,7 @@ export function Header({ serverOnline }) {
         {/* Right side - API docs and Server status */}
         <div className="flex items-center gap-3">
           <a
-            href="http://localhost:3099/api-docs"
+            href="/api-docs"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-4 py-2 rounded-xl glass border-white/10 backdrop-blur-sm hover:border-indigo-500/50 hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-300 text-slate-300 text-xs font-bold tracking-wider"
